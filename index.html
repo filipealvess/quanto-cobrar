@@ -394,6 +394,13 @@ feedbackForm.addEventListener('submit', function(e){
         return;
     }
 
+    if (window.gtag) {
+        gtag('event', 'feedback_enviado', {
+            comment: comentario || null,
+            email: email || null
+        });
+    }
+
     // Aqui você faria integração real com backend ou serviço externo
     // Por enquanto, só simulamos envio:
     // alert(`Obrigado pelo feedback!\n\nComentário: ${comentario}\n${email ? "E-mail: " + email : "Sem e-mail informado"}`);
