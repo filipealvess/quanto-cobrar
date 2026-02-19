@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora Inteligente de Precificação Freelancer</title>
+
+<style>
+:root {
+    --bg: #f4f4f5;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-soft: #6b7280;
+    --primary: #2563eb;
+    --result-bg: #f1f5f9;
+}
+
+/* DARK MODE */
+[data-theme="dark"] {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #f3f4f6;
+    --text-soft: #9ca3af;
+    --primary: #3b82f6;
+    --result-bg: #202020;
+}
+
+* {
+    box-sizing: border-box;
+    transition: background 0.25s ease, color 0.25s ease, border 0.25s ease;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    background: var(--card);
+    padding: 42px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+.top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-soft);
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: var(--text-soft);
+    margin-bottom: 28px;
+}
+
+/* RESULTADO */
+.result-card {
+    background: var(--result-bg);
+    border: 1px solid var(--border);
+    padding: 28px;
+    border-radius: 14px;
+    margin-bottom: 32px;
+}
+
+.result-label {
+    font-size: 14px;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+}
+
+.result-main {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 14px;
+}
+
+.result-sub {
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.result-sub span {
+    font-weight: 600;
+}
+
+/* FORM */
+.form-group {
+    margin-bottom: 22px;
+}
+
+.label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+label {
+    font-weight: 600;
+}
+
+.tooltip {
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-soft);
+    position: relative;
+}
+
+.tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 26px;
+    right: 0;
+    width: 260px;
+    background: #111;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* BOTÃO */
+button.submit-feedback {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    padding: 14px 0;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+button.submit-feedback:hover {
+    background-color: #1e40af; /* tom mais escuro do azul */
+}
+
+/* Feedback form section */
+.feedback-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.feedback-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+.feedback-subtitle {
+    color: var(--text-soft);
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+/* Mensagem após envio */
+.feedback-thanks {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-top: 20px;
+    line-height: 1.5;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <button class="theme-toggle" onclick="toggleTheme()">Alternar tema</button>
+    </div>
+
+    <h1>Descubra quanto você realmente deve cobrar</h1>
+    <div class="subtitle">
+        Defina seu valor com base em metas reais, margem estratégica e proteção contra riscos.
+    </div>
+
+    <div class="result-card">
+        <div class="result-label">Valor sugerido para este projeto</div>
+        <div class="result-main" id="valorProjeto">R$ 0,00</div>
+        <div class="result-sub">
+            Valor estratégico por hora: <span id="valorRecomendado">R$ 0,00</span>
+        </div>
+        <div class="result-sub">
+            Valor mínimo sustentável por hora: <span id="valorMinimo">R$ 0,00</span>
+        </div>
+    </div>
+
+    <!-- CAMPOS -->
+    <div class="form-group">
+        <div class="label-wrapper">
+            <label>Quanto você precisa ganhar por mês?</label>
+            <span class="tooltip" data-tooltip="Valor total necessário para cobrir custos pessoais, despesas profissionais, impostos e reserva.">ⓘ</span>
+        </div>
+        <input type="number" id="receita" placeholder="Ex: 8000" />
+    </div>
+
+    <div class="form-group">
+        <div class="label-wrapper">
+            <label>Horas vendáveis por mês</label>
+            <span class="tooltip" data-tooltip="Considere apenas horas faturáveis. A média é entre 80 e 120 horas/mês.">ⓘ</span>
+        </div>
+        <input type="number" id="horasVendaveis" value="100" />
+    </div>
+
+    <div class="form-group">
+        <div class="label-wrapper">
+            <label>Margem estratégica (%)</label>
+            <span class="tooltip" data-tooltip="Percentual adicional para crescimento e proteção contra imprevistos.">ⓘ</span>
+        </div>
+        <input type="number" id="margem" value="30" />
+    </div>
+
+    <div class="form-group">
+        <div class="label-wrapper">
+            <label>Horas estimadas do projeto</label>
+            <span class="tooltip" data-tooltip="Estimativa realista do tempo total para executar o projeto.">ⓘ</span>
+        </div>
+        <input type="number" id="horasProjeto" placeholder="Ex: 20" />
+    </div>
+
+    <div class="form-group">
+        <div class="label-wrapper">
+            <label>Nível de risco do projeto</label>
+            <span class="tooltip" data-tooltip="Projetos com maior incerteza exigem fator maior para proteger seu lucro.">ⓘ</span>
+        </div>
+        <select id="fatorRisco">
+            <option value="1">Escopo fechado</option>
+            <option value="1.2">Pequeno risco</option>
+            <option value="1.3">Médio risco</option>
+            <option value="1.5">Alto risco</option>
+        </select>
+    </div>
+
+    <!-- Feedback section -->
+    <section class="feedback-section" id="feedbackSection">
+        <div class="feedback-title">Quer ajudar a melhorar esta calculadora?</div>
+        <div class="feedback-subtitle">Deixe seu feedback ou sugestão abaixo. Se quiser, deixe seu e-mail para que possamos te avisar sobre novidades.</div>
+        <form id="feedbackForm">
+            <div class="form-group">
+                <label for="comentario">Seu feedback *</label>
+                <textarea id="comentario" rows="4" required placeholder="Conte o que você achou, melhorias, dúvidas..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="email">Seu e-mail (opcional)</label>
+                <input type="email" id="email" placeholder="exemplo@dominio.com" />
+            </div>
+            <button type="submit" class="submit-feedback">Enviar feedback</button>
+        </form>
+    </section>
+
+</div>
+
+<script>
+// Detectar preferência do sistema
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme) {
+    document.documentElement.setAttribute("data-theme", savedTheme);
+} else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.setAttribute("data-theme", "dark");
+}
+
+// Alternar tema manualmente
+function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme");
+    const newTheme = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+}
+
+// Cálculo
+function arredondarParaCima(valor) {
+    return Math.ceil(valor * 100) / 100;
+}
+
+function formatarMoeda(valor) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function calcular() {
+    const receita = parseFloat(receitaInput.value) || 0;
+    const horasVend = parseFloat(horasVendaveis.value) || 0;
+    const margem = parseFloat(margemInput.value) || 0;
+    const horasProj = parseFloat(horasProjeto.value) || 0;
+    const fator = parseFloat(fatorRisco.value) || 1;
+
+    if (receita <= 0 || horasVend <= 0) {
+        valorMinimo.innerText = "R$ 0,00";
+        valorRecomendado.innerText = "R$ 0,00";
+        valorProjeto.innerText = "R$ 0,00";
+        return;
+    }
+
+    const minimo = arredondarParaCima(receita / horasVend);
+    const recomendado = arredondarParaCima(minimo * (1 + margem / 100));
+    const projeto = arredondarParaCima(recomendado * horasProj * fator);
+
+    valorMinimo.innerText = formatarMoeda(minimo);
+    valorRecomendado.innerText = formatarMoeda(recomendado);
+    valorProjeto.innerText = formatarMoeda(projeto);
+}
+
+const receitaInput = document.getElementById('receita');
+const horasVendaveis = document.getElementById('horasVendaveis');
+const margemInput = document.getElementById('margem');
+const horasProjeto = document.getElementById('horasProjeto');
+const fatorRisco = document.getElementById('fatorRisco');
+
+const valorMinimo = document.getElementById('valorMinimo');
+const valorRecomendado = document.getElementById('valorRecomendado');
+const valorProjeto = document.getElementById('valorProjeto');
+
+document.querySelectorAll("input, select").forEach(el => {
+    el.addEventListener("input", calcular);
+});
+
+// Inicializa cálculo vazio
+calcular();
+
+
+// --- Feedback form logic ---
+const feedbackForm = document.getElementById('feedbackForm');
+const feedbackSection = document.getElementById('feedbackSection');
+
+feedbackForm.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const comentario = document.getElementById('comentario').value.trim();
+    const email = document.getElementById('email').value.trim();
+
+    if (!comentario) {
+        alert("Por favor, deixe seu feedback para enviar.");
+        return;
+    }
+
+    // Aqui você faria integração real com backend ou serviço externo
+    // Por enquanto, só simulamos envio:
+    // alert(`Obrigado pelo feedback!\n\nComentário: ${comentario}\n${email ? "E-mail: " + email : "Sem e-mail informado"}`);
+
+    // Substituir o formulário pela mensagem de agradecimento
+    feedbackSection.innerHTML = `
+        <div class="feedback-thanks">
+            Você é show! Muito obrigado!
+        </div>
+    `;
+});
+</script>
+
+</body>
+</html>
